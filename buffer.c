@@ -43,14 +43,16 @@ struct {
 //rotina de producao
 
 void *produce(void* arg){
+
         printf("prod\n");
+
         while(shared.nextPutAux < TOTALITEMS){
 
                 //printf("here1\n");
 
                 pthread_mutex_lock(&shared.mutex);
                 shared.tapetecircular_buffer[shared.nextPut] = shared.nextVal;
-                printf("In: %d\n", shared.tapetecircular_buffer[shared.nextPut]);
+                printf("In %d: %d\n",shared.nextPut ,shared.tapetecircular_buffer[shared.nextPut]);
                 *((int *) arg) += 1;
                 if(shared.nextPut == MAXITEMS - 1){
                         shared.nextPut -= 34;
@@ -59,6 +61,7 @@ void *produce(void* arg){
                 }
 		shared.nextPutAux++;
                 shared.nextVal++;
+
 		/*if(shared.nextPutAux >= TOTALITEMS){
 			for(int i = 0 ; i < 35; i++){
 				shared.tapetecircular_buffer[i] = 20000;
@@ -78,6 +81,7 @@ void *produce(void* arg){
 			pthread_cond_wait(&actCtrl.cond_prod, &actCtrl.mutex);
 		}
                 actCtrl.numReady++;
+                //printf("numReady = %d\n", actCtrl.numReady);
                 pthread_mutex_unlock(&actCtrl.mutex);
 
                 //pthread_mutex_unlock(&shared.mutex);
@@ -122,13 +126,14 @@ void *consume(void* arg){
 
                 pthread_mutex_lock(&actCtrl.mutex);
 		//consumerShared.nextPut++;
-		/*if(actCtrl.numReady < MAXITEMS){
-			pthread_cond_wait(&actCtrl.cond_con, &actCtrl.mutex);
-		}*/
-                while(actCtrl.numReady == 0)
-                        pthread_cond_wait(&actCtrl.cond_con, &actCtrl.mutex);
+		if(actCtrl.numReady < MAXITEMS){
 			pthread_cond_signal(&actCtrl.cond_prod);
+		}
+                while(actCtrl.numReady == 0){
+                        pthread_cond_wait(&actCtrl.cond_con, &actCtrl.mutex);
+                }
                 actCtrl.numReady--;
+                //printf("numReady = %d\n", actCtrl.numReady);
                 pthread_mutex_unlock(&actCtrl.mutex);
 
                 //pthread_mutex_unlock(&shared.mutex);
@@ -205,3 +210,7 @@ int main(){
 
         exit(0);
 }
+
+
+
+
