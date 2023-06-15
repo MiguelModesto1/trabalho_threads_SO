@@ -13,7 +13,7 @@ struct {
         pthread_mutex_t mutex; // mutex para acesso exclusivo aos 2 buffers
         int *tapetecircular_buffer; //ponteiro para o array do tapete circular
         int nextPut; // indice do proximo local para escrever valores
-	int nextPutAux; // valor de auxilio para o 'while' da rotina de producao
+	      int nextPutAux; // valor de auxilio para o 'while' da rotina de producao
         int nextCon; // indice do proximo local para ler valores
         int nextVal; // proximo valor a colocar no tapete circular
 } shared = {PTHREAD_MUTEX_INITIALIZER};
@@ -31,7 +31,7 @@ struct {
 struct {
         pthread_mutex_t mutex; // mutex para acesso exclusivo aos recursos de controlo
         pthread_cond_t cond_prod; // variavel de condicao de producao
-	pthread_cond_t cond_con; // variavel de condicao de consumo
+	      pthread_cond_t cond_con; // variavel de condicao de consumo
         int numReady; // numero de pratos prontos
 } actCtrl = {PTHREAD_MUTEX_INITIALIZER, PTHREAD_COND_INITIALIZER, PTHREAD_COND_INITIALIZER};
 
@@ -47,15 +47,15 @@ void *produce(void* arg){
                 }else if(shared.nextPut < MAXITEMS - 1){
                         shared.nextPut++; // senao incrementa em 1;
                 }
-		shared.nextPutAux++; // incremento da variavel de auxilio ao 'while'
+		            shared.nextPutAux++; // incremento da variavel de auxilio ao 'while'
                 shared.nextVal++; // incremento do valor do proximo prato a colocar
-		pthread_mutex_unlock(&shared.mutex); // desbloquear acesso aos buffers
+		            pthread_mutex_unlock(&shared.mutex); // desbloquear acesso aos buffers
 
                 pthread_mutex_lock(&actCtrl.mutex); // bloquear acesso aos recursos de controlo
-		while(actCtrl.numReady == MAXITEMS){ // enquanto o tapete circular estiver cheio
-			pthread_cond_wait(&actCtrl.cond_prod, &actCtrl.mutex); // esperar condicao de producao
-		}
-		pthread_cond_signal(&actCtrl.cond_con); // sinalizar condicao de consumo
+		            while(actCtrl.numReady == MAXITEMS){ // enquanto o tapete circular estiver cheio
+			                  pthread_cond_wait(&actCtrl.cond_prod, &actCtrl.mutex); // esperar condicao de producao
+		            }
+		            pthread_cond_signal(&actCtrl.cond_con); // sinalizar condicao de consumo
                 actCtrl.numReady++; // incremento de numero de pratos prontos
                 pthread_mutex_unlock(&actCtrl.mutex); // desbloquear acesso aos recursos de controlo
         }
@@ -65,27 +65,25 @@ void *produce(void* arg){
 //rotina de consumo
 
 void *consume(void* arg){
-
         while(consumerShared.nextPut < TOTALITEMS){ // iterar ate o indice do ultimo valor ser 20000
                 pthread_mutex_lock(&shared.mutex); // bloquear acesso aos buffers
-		consumerShared.saida_buffer[consumerShared.nextPut] = shared.tapetecircular_buffer[shared.nextCon] - 20000; // realizar operacao de consumo e colocar no tapete de saida
-		*((int *) arg) += 1; // contagem individual de operacoes realizadas
-		consumerShared.nextVal = consumerShared.saida_buffer[consumerShared.nextPut]; // valor a imprimir no ecra
+		            consumerShared.saida_buffer[consumerShared.nextPut] = shared.tapetecircular_buffer[shared.nextCon] - 20000; // realizar operacao de consumo e colocar no tapete de saida
+		            *((int *) arg) += 1; // contagem individual de operacoes realizadas
+		            consumerShared.nextVal = consumerShared.saida_buffer[consumerShared.nextPut]; // valor a imprimir no ecra
                 printf("%d ", consumerShared.nextVal); // imprimir 'nextVal' no ecra
-		if(shared.nextCon == MAXITEMS - 1){ // verificacao do indice de consumo do array
+		            if(shared.nextCon == MAXITEMS - 1){ // verificacao do indice de consumo do array
                         shared.nextCon -= 34; // se chegou ao limite, volta ao indice 0
                 }else if(shared.nextCon < MAXITEMS - 1){
                         shared.nextCon++; // senao incrementa em 1
                 }
                 consumerShared.nextPut++; // incremento do indice do proximo valor para o tapete de saida
-
-		pthread_mutex_unlock(&shared.mutex); // desbloquear acesso aos buffers
+		            pthread_mutex_unlock(&shared.mutex); // desbloquear acesso aos buffers
 
                 pthread_mutex_lock(&actCtrl.mutex); // bloquear acesso os recursos de controlo
-		while(actCtrl.numReady == 0) // enquanto o numero de pratos for 0
+		            while(actCtrl.numReady == 0) // enquanto o numero de pratos for 0
                         pthread_cond_wait(&actCtrl.cond_con, &actCtrl.mutex); // esprar pela condicao de consumo
-		pthread_cond_signal(&actCtrl.cond_prod); // sinzalizar condicao de producao
-		actCtrl.numReady--; // decrementar numero de pratos prontos
+		            pthread_cond_signal(&actCtrl.cond_prod); // sinzalizar condicao de producao
+		            actCtrl.numReady--; // decrementar numero de pratos prontos
                 pthread_mutex_unlock(&actCtrl.mutex); // desbloquear acesso aos recursos de controlo
         }
 	return(NULL);
@@ -106,9 +104,9 @@ int main(){
 
         shared.nextVal = 20001;
 
-	//iniciar 'numReady' a zero
+	      //iniciar 'numReady' a zero
 	
-	actCtrl.numReady = 0;
+	      actCtrl.numReady = 0;
 
         //declarar iterador
 
@@ -118,10 +116,10 @@ int main(){
 
         int count[5] = {0,0,0,0,0};
 
-	//atributos thread
+	      //atributos thread
 	
-	pthread_attr_t tattr;
-	int ret = pthread_attr_init(&tattr);
+	      pthread_attr_t tattr;
+	      int ret = pthread_attr_init(&tattr);
 
         //declarar threads produtoras
 
@@ -138,9 +136,9 @@ int main(){
         pthread_create(&PCOOK_2, &tattr, produce, &count[1]);
         pthread_create(&PCOOK_3, &tattr, produce, &count[2]);
         
-	//consumidoras
-	pthread_create(&COMILAO_1, &tattr, consume, &count[3]);
-	pthread_create(&COMILAO_2, &tattr, consume, &count[4]);
+	      //consumidoras
+	      pthread_create(&COMILAO_1, &tattr, consume, &count[3]);
+	      pthread_create(&COMILAO_2, &tattr, consume, &count[4]);
 
         //esperar termino de threads
         pthread_join(PCOOK_1, NULL);
@@ -149,17 +147,17 @@ int main(){
         pthread_join(COMILAO_1, NULL);
         pthread_join(COMILAO_2, NULL);
 
-	//escrever contagens de operacoes individuais no ecra
+	      //escrever contagens de operacoes individuais no ecra
         printf("\nPCOOK_1 cozinhou %d pratos\n", count[0]);
         printf("PCOOK_2 cozinhou %d pratos\n", count[1]);
         printf("PCOOK_3 cozinhou %d pratos\n", count[2]);
         printf("COMILAO_1 comeu %d pratos\n", count[3]);
         printf("COMILAO_2 comeu %d pratos\n", count[4]);
 
-	//libertar memoria alocada dinamicamente para os 2 buffers
+	      //libertar memoria alocada dinamicamente para os 2 buffers
         free(shared.tapetecircular_buffer);
         free(consumerShared.saida_buffer);
 
-	//sair com sucesso
+	      //sair com sucesso
         exit(0);
 }
