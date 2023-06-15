@@ -1,6 +1,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<pthread.h>
+#include<unistd.h>
 
 #define MAXITEMS 35		// maximo de items para o tapete circular
 #define TOTALITEMS 20000	// numero total de elementos a processar pelas threads
@@ -52,14 +53,15 @@ void *produce(void* arg){
 		            pthread_mutex_unlock(&shared.mutex); // desbloquear acesso aos buffers
 
                 pthread_mutex_lock(&actCtrl.mutex); // bloquear acesso aos recursos de controlo
-		            while(actCtrl.numReady == MAXITEMS){ // enquanto o tapete circular estiver cheio
+
+		            if(actCtrl.numReady >= MAXITEMS){ // se o tapete circular estiver cheio
 			                  pthread_cond_wait(&actCtrl.cond_prod, &actCtrl.mutex); // esperar condicao de producao
 		            }
 		            pthread_cond_signal(&actCtrl.cond_con); // sinalizar condicao de consumo
                 actCtrl.numReady++; // incremento de numero de pratos prontos
                 pthread_mutex_unlock(&actCtrl.mutex); // desbloquear acesso aos recursos de controlo
         }
-	return(NULL);
+	//return(NULL);
 }
 
 //rotina de consumo
@@ -80,13 +82,14 @@ void *consume(void* arg){
 		            pthread_mutex_unlock(&shared.mutex); // desbloquear acesso aos buffers
 
                 pthread_mutex_lock(&actCtrl.mutex); // bloquear acesso os recursos de controlo
-		            while(actCtrl.numReady == 0) // enquanto o numero de pratos for 0
+
+		            if(actCtrl.numReady <= 0) // se o numero de pratos for menor ou igual a 0
                         pthread_cond_wait(&actCtrl.cond_con, &actCtrl.mutex); // esprar pela condicao de consumo
 		            pthread_cond_signal(&actCtrl.cond_prod); // sinzalizar condicao de producao
 		            actCtrl.numReady--; // decrementar numero de pratos prontos
                 pthread_mutex_unlock(&actCtrl.mutex); // desbloquear acesso aos recursos de controlo
         }
-	return(NULL);
+	//return(NULL);
 }
 
 int main(){
