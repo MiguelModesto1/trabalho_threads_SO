@@ -1,7 +1,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<pthread.h>
-#include<unistd.h>
+#include<time.h>
 
 #define MAXITEMS 35		// maximo de items para o tapete circular
 #define TOTALITEMS 20000	// numero total de elementos a processar pelas threads
@@ -60,8 +60,9 @@ void *produce(void* arg){
 		            pthread_cond_signal(&actCtrl.cond_con); // sinalizar condicao de consumo
                 actCtrl.numReady++; // incremento de numero de pratos prontos
                 pthread_mutex_unlock(&actCtrl.mutex); // desbloquear acesso aos recursos de controlo
-        }
-	//return(NULL);
+        	usleep(500);
+	}
+	return(NULL);
 }
 
 //rotina de consumo
@@ -88,8 +89,9 @@ void *consume(void* arg){
 		            pthread_cond_signal(&actCtrl.cond_prod); // sinzalizar condicao de producao
 		            actCtrl.numReady--; // decrementar numero de pratos prontos
                 pthread_mutex_unlock(&actCtrl.mutex); // desbloquear acesso aos recursos de controlo
-        }
-	//return(NULL);
+        	usleep(500);
+	}
+	return(NULL);
 }
 
 int main(){
